@@ -30,13 +30,19 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                 uri.startsWith("/swagger-ui/") ||
                 uri.startsWith("/api-docs") ||
                 uri.equals("/actuator/health") ||
+                uri.startsWith("/actuator/") ||
+                uri.equals("/actuator/prometheus") ||
                 uri.equals("/v3/api-docs") ||
                 uri.startsWith("/v3/api-docs") ||
                 uri.equals("/ragchat/api/health") ||
+                uri.equals("/ragchat/api/metrics") ||
+                uri.equals("/ragchat/api/info") ||
+                uri.equals("/ragchat/api/prometheus") ||
                 uri.equals("/ragchat/swagger-ui.html") ||
                 uri.startsWith("/ragchat/swagger-ui/") ||
                 uri.startsWith("/ragchat/api-docs") ||
-                uri.equals("/ragchat/actuator/health") ||
+                uri.startsWith("/ragchat/actuator/") ||
+                uri.equals("/ragchat/actuator/prometheus") ||
                 uri.equals("/ragchat/v3/api-docs") ||
                 uri.startsWith("/ragchat/v3/api-docs")) {
 

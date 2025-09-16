@@ -78,8 +78,6 @@ All endpoints are prefixed with `/ragchat`
   - `GET /ragchat/actuator/health` — Detailed application health information
   - `GET /ragchat/actuator/info` — Application information
   - `GET /ragchat/actuator/metrics` — Application metrics
-  - `GET /ragchat/actuator/prometheus` — Metrics in Prometheus format
-
 ---
 
 ## 🗄️ Database

@@ -32,16 +32,28 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+            // Disable CSRF for all endpoints including actuator
+            .csrf(csrf -> csrf.disable())
+            // Configure CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // Configure authorization rules
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+                    // Standard paths
                     "/actuator/**",
                     "/api/health",
                     "/swagger-ui.html",
                     "/swagger-ui/**",
                     "/api-docs/**",
                     "/v3/api-docs/**",
+                    // Context path prefixed paths
+                    "/ragchat/actuator/**",
+                    "/ragchat/actuator/prometheus",
+                    "/ragchat/actuator/health/**",
+                    "/ragchat/actuator/info/**",
+                    "/ragchat/actuator/metrics/**",
+                    "/ragchat/api/health",
                     "/ragchat/swagger-ui.html",
                     "/ragchat/swagger-ui/**",
                     "/ragchat/api-docs/**",
