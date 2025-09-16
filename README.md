@@ -40,8 +40,8 @@ A fast, secure, and scalable backend for storing chat histories from RAG (Retrie
    docker compose up -d
    ```
 3. **Access Services**
-   - API: [http://localhost:8080](http://localhost:8080)
-   - Docs: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+   - API: [http://localhost:8080/ragchat](http://localhost:8080/ragchat)
+   - Docs: [http://localhost:8080/ragchat/swagger-ui.html](http://localhost:8080/ragchat/swagger-ui.html)
    - PgAdmin: [http://localhost:5050](http://localhost:5050)
 
 ---
@@ -55,23 +55,30 @@ X-API-Key: your-api-key
 ---
 
 ## 📚 API Endpoints
+All endpoints are prefixed with `/ragchat`
+
 - **Users:**
-  - `POST /api/users` — Create user
-  - `GET /api/users/{id}` — Get user
+  - `POST /ragchat/api/users` — Create user
+  - `GET /ragchat/api/users/{id}` — Get user
 - **Sessions:**
-  - `POST /api/chat/sessions` — Create session
-  - `PUT /api/chat/sessions/{id}` — Update session
-  - `GET /api/chat/sessions` — List sessions (pagination)
-  - `DELETE /api/chat/sessions/{id}` — Delete session
-  - `GET /api/chat/sessions?favorite=true` — Favorite sessions
+  - `POST /ragchat/api/chat/sessions` — Create session
+  - `PUT /ragchat/api/chat/sessions/{id}` — Update session
+  - `GET /ragchat/api/chat/sessions` — List sessions (pagination)
+  - `DELETE /ragchat/api/chat/sessions/{id}` — Delete session
+  - `GET /ragchat/api/chat/sessions?favorite=true` — Favorite sessions
 - **Messages:**
-  - `POST /api/chat/sessions/{id}/messages` — Add message
-  - `GET /api/chat/sessions/{id}/messages` — Get messages (pagination)
+  - `POST /ragchat/api/chat/sessions/{id}/messages` — Add message
+  - `GET /ragchat/api/chat/sessions/{id}/messages` — Get messages (pagination)
 - **Session Chat (Context):**
-  - `GET /api/session-chat/{id}/messages` — Paginated messages
-  - `POST /api/session-chat/{id}/add-message` — Add message with context
+  - `GET /ragchat/api/session-chat/{id}/messages` — Paginated messages
+  - `POST /ragchat/api/session-chat/{id}/add-message` — Add message with context
 - **Health:**
-  - `GET /api/health` — Health check
+  - `GET /ragchat/api/health` — Health check
+- **Actuator:**
+  - `GET /ragchat/actuator/health` — Detailed application health information
+  - `GET /ragchat/actuator/info` — Application information
+  - `GET /ragchat/actuator/metrics` — Application metrics
+  - `GET /ragchat/actuator/prometheus` — Metrics in Prometheus format
 
 ---
 

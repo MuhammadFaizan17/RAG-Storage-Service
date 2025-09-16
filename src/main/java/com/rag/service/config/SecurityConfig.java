@@ -41,7 +41,11 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/swagger-ui/**",
                     "/api-docs/**",
-                    "/v3/api-docs/**"
+                    "/v3/api-docs/**",
+                    "/ragchat/swagger-ui.html",
+                    "/ragchat/swagger-ui/**",
+                    "/ragchat/api-docs/**",
+                    "/ragchat/v3/api-docs/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

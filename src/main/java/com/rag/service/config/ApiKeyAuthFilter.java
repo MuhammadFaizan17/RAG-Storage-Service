@@ -31,7 +31,14 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                 uri.startsWith("/api-docs") ||
                 uri.equals("/actuator/health") ||
                 uri.equals("/v3/api-docs") ||
-                uri.startsWith("/v3/api-docs")) {
+                uri.startsWith("/v3/api-docs") ||
+                uri.equals("/ragchat/api/health") ||
+                uri.equals("/ragchat/swagger-ui.html") ||
+                uri.startsWith("/ragchat/swagger-ui/") ||
+                uri.startsWith("/ragchat/api-docs") ||
+                uri.equals("/ragchat/actuator/health") ||
+                uri.equals("/ragchat/v3/api-docs") ||
+                uri.startsWith("/ragchat/v3/api-docs")) {
 
             filterChain.doFilter(request, response);
             return;
