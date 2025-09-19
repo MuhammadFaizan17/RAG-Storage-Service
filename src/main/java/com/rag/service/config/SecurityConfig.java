@@ -3,6 +3,7 @@ package com.rag.service.config;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             // Configure CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // Custom AuthenticationEntryPoint to always return 401
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                })
+            )
             // Configure authorization rules
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(

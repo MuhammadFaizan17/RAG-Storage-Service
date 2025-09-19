@@ -8,13 +8,15 @@ A fast, secure, and scalable backend for storing chat histories from RAG (Retrie
 - **Chat Sessions:** Create, rename, favorite, delete, and paginate sessions
 - **Messages:** Store messages with sender, content, and context
 - **User Management:** Email-based user identification
-- **API Security:** API key authentication & rate limiting
-- **Health Checks:** `/api/health` endpoint
+- **API Security:** Multiple API key authentication & per-key rate limiting
+- **Health Checks:** `/ragchat/api/health` endpoint
 - **OpenAPI Docs:** Interactive Swagger UI
 - **CORS & Logging:** Secure CORS, centralized logging
 - **Global Exception Handler:** Standardized error responses across all endpoints
 - **Dockerized:** One-command setup with Docker Compose
 - **Database Migrations:** Managed with Liquibase
+- **Actuator Endpoints:** Health, Info, Metrics
+- **Sonar Compliance:** Passes SonarQube rules for code quality
 
 ---
 
@@ -24,13 +26,14 @@ A fast, secure, and scalable backend for storing chat histories from RAG (Retrie
 - **Bucket4j** (rate limiting) · OpenAPI/Swagger
 - **JUnit 5** · Mockito · Spring Boot Test
 - **Docker** · Docker Compose
+- **SonarQube** (code quality)
 
 ---
 
 ## ⚡ Quick Start
 1. **Clone & Configure**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/MuhammadFaizan17/RAG-Storage-Service.git
    cd service
    cp .env.example .env
    # Edit .env for your secrets
@@ -41,16 +44,21 @@ A fast, secure, and scalable backend for storing chat histories from RAG (Retrie
    ```
 3. **Access Services**
    - API: [http://localhost:8080/ragchat](http://localhost:8080/ragchat)
-   - Docs: [http://localhost:8080/ragchat/swagger-ui.html](http://localhost:8080/ragchat/swagger-ui.html)
+   - Docs: [http://localhost:8080/ragchat/swagger-ui/index.html](http://localhost:8080/ragchat/swagger-ui/index.html)
+   - Actuator: [http://localhost:8080/ragchat/actuator/health](http://localhost:8080/ragchat/actuator/health)
    - PgAdmin: [http://localhost:5050](http://localhost:5050)
 
 ---
 
-## 🔒 Authentication
-All endpoints (except health/docs) require:
+## 🔒 Authentication & Rate Limiting
+All endpoints (except health/docs) require an API key:
+
 ```
-X-API-Key: your-api-key
+X-API-Key: dummyKey1,dummykey2
 ```
+- Multiple API keys supported (configurable)
+- Each API key has its own rate limit (e.g., 100 requests/minute)
+- Exceeding rate limit returns HTTP 429
 
 ---
 
@@ -87,17 +95,14 @@ All endpoints are prefixed with `/ragchat`
 
 ---
 
-## 🚦 Rate Limiting
-- Default: 100 requests/minute per API key
-- Configurable via `.env`
+## 🛡️ Exception Handling
+- Global exception handler for consistent error responses
 
 ---
 
-## 🧪 Testing & Development
-- **Run tests:** `./mvnw test`
-- **Integration tests:** `./mvnw verify`
-- **Local dev:** `./mvnw spring-boot:run`
-- **DB migrations:** Liquibase (`./mvnw liquibase:update`)
+## 🧪 Testing & Quality
+- Unit & integration tests: JUnit 5, Mockito
+- SonarQube rules enforced
 
 ---
 
