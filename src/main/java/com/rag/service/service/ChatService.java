@@ -3,13 +3,15 @@ package com.rag.service.service;
 import com.rag.service.dto.AddMessageRequest;
 import com.rag.service.dto.ChatMessageResponse;
 import com.rag.service.dto.ChatSessionResponse;
-import com.rag.service.dto.MessageResponseDto;
+import com.rag.service.dto.CreateSessionRequest;
 import com.rag.service.dto.PageableResponse;
 import com.rag.service.entity.ChatMessage;
 import com.rag.service.entity.ChatSession;
 import com.rag.service.entity.User;
 import com.rag.service.exception.NotFoundException;
 import com.rag.service.exception.RateLimitException;
+import com.rag.service.mapper.ChatMessageMapper;
+import com.rag.service.mapper.ChatSessionMapper;
 import com.rag.service.repository.ChatMessageRepository;
 import com.rag.service.repository.ChatSessionRepository;
 import com.rag.service.repository.UserRepository;
@@ -36,53 +38,24 @@ public class ChatService {
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
     private final UserRepository userRepository;
-
-    private ChatSessionResponse toSessionResponse(ChatSession session) {
-        return ChatSessionResponse.builder()
-                .id(session.getId())
-                .name(session.getName())
-                .favorite(session.isFavorite())
-                .createdAt(session.getCreatedAt() == null ? null : session.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
-                .updatedAt(session.getUpdatedAt() == null ? null : session.getUpdatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
-                .userId(session.getUser().getId())
-                .build();
-    }
-
-    private ChatMessageResponse toMessageResponse(List<ChatMessage> message, String sessionId, String sessionName) {
-        if (null == message || message.isEmpty()) {
-            return ChatMessageResponse.builder().messages(new ArrayList<>()).sessionName(sessionName).sessionId(sessionId).build();
-        }
-        return ChatMessageResponse.builder().sessionName(sessionName)
-                .sessionId(sessionId)
-
-                .messages(message.stream().map(m -> MessageResponseDto.builder()
-                        .id(m.getId().toString())
-                        .content(m.getContent())
-                        .sender(m.getSender())
-                        .createdAt(m.getCreatedAt().toString())
-                        .context(m.getRetrievedContext())
-                        .build()).toList())
-                .build();
-    }
+    private final ChatSessionMapper chatSessionMapper;
+    private final ChatMessageMapper chatMessageMapper;
 
     @Transactional
-    public ChatSessionResponse createSession(String name, String userId, Bucket rateLimitBucket) {
+    public ChatSessionResponse createSession(CreateSessionRequest request, Bucket rateLimitBucket) {
         validateRateLimit(rateLimitBucket);
 
-        User user = userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + userId));
+        User user = userRepository.findById(UUID.fromString(request.getUserId()))
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + request.getUserId()));
 
-        if (sessionRepository.existsByNameAndUser(name, user)) {
+        if (sessionRepository.existsByNameAndUser(request.getName(), user)) {
             throw new IllegalArgumentException(SESSION_ALREADY_EXIST_MSG);
         }
 
-        ChatSession session = ChatSession.builder()
-                .name(name)
-                .user(user)
-                .favorite(false)
-                .build();
+        ChatSession session = chatSessionMapper.toEntity(request, user);
+
         session = sessionRepository.save(session);
-        return toSessionResponse(session);
+        return chatSessionMapper.toChatSessionResponse(session);
     }
 
     @Transactional
@@ -106,7 +79,7 @@ public class ChatService {
         if (favorite != null) {
             session.setFavorite(favorite);
         }
-        return toSessionResponse(sessionRepository.save(session));
+        return chatSessionMapper.toChatSessionResponse(sessionRepository.save(session));
     }
 
     @Transactional
@@ -123,12 +96,14 @@ public class ChatService {
             throw new IllegalArgumentException(UNAUTHORISED_SESSION_USER_MSG);
         }
 
-        ChatMessage message = ChatMessage.builder()
-                .session(session)
-                .content(request.getContent())
-                .sender(request.getSender())
-                .retrievedContext(request.getContext())
-                .build();
+//        ChatMessage message = ChatMessage.builder()
+//                .session(session)
+//                .content(request.getContent())
+//                .sender(request.getSender())
+//                .retrievedContext(request.getContext())
+//                .build();
+
+        ChatMessage message=chatMessageMapper.toEntity(request,session);
         messageRepository.save(message);
     }
 
@@ -136,14 +111,14 @@ public class ChatService {
     public Page<ChatSessionResponse> getFavoriteSessions(String userId, Pageable pageable, Bucket rateLimitBucket) {
         validateRateLimit(rateLimitBucket);
         return sessionRepository.findByUserIdAndFavoriteTrue(UUID.fromString(userId), pageable)
-                .map(this::toSessionResponse);
+                .map(chatSessionMapper::toChatSessionResponse);
     }
 
     @Transactional(readOnly = true)
     public Page<ChatSessionResponse> getAllSessions(String userId, Pageable pageable, Bucket rateLimitBucket) {
         validateRateLimit(rateLimitBucket);
         return sessionRepository.findByUserId(UUID.fromString(userId), pageable)
-                .map(this::toSessionResponse);
+                .map(chatSessionMapper::toChatSessionResponse);
     }
 
     @Transactional(readOnly = true)
@@ -155,8 +130,24 @@ public class ChatService {
                 .orElseThrow(() -> new NotFoundException(SESSION_NOT_FOUND_MSG));
 
         Page<ChatMessage> sessionMessage = messageRepository.findBySessionIdOrderByCreatedAtDesc(sessionUuid, pageable);
+        List<ChatMessage> messages = sessionMessage.getContent();
+
+        ChatMessageResponse chatMessageResponse;
+        if (messages.isEmpty()) {
+            chatMessageResponse = ChatMessageResponse.builder()
+                .sessionId(chatSession.getId().toString())
+                .sessionName(chatSession.getName())
+                .messages(new ArrayList<>())
+                .build();
+        } else {
+            chatMessageResponse = chatMessageMapper.toChatMessageResponse(
+                chatSession,
+                chatMessageMapper.toMessageResponseDtoList(messages)
+            );
+        }
+
         return PageableResponse.builder()
-                .data(toMessageResponse(sessionMessage.getContent(), chatSession.getId().toString(), chatSession.getName()))
+                .data(chatMessageResponse)
                 .totalPages(sessionMessage.getTotalPages())
                 .totalElements(sessionMessage.getTotalElements())
                 .build();

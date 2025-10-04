@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -63,8 +64,8 @@ class ChatControllerTest {
                 .name("Test Session")
                 .userId(userId)
                 .favorite(false)
-                .createdAt(now)
-                .updatedAt(now)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 
@@ -75,7 +76,7 @@ class ChatControllerTest {
                 .name("Test Session")
                 .userId(userIdStr)
                 .build();
-        when(chatService.createSession(request.getName(), request.getUserId(), rateLimitBucket))
+        when(chatService.createSession(request, rateLimitBucket))
                 .thenReturn(mockSessionResponse);
 
 
@@ -85,7 +86,7 @@ class ChatControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(mockSessionResponse, response.getBody());
-        verify(chatService).createSession(request.getName(), request.getUserId(), rateLimitBucket);
+        verify(chatService).createSession(request, rateLimitBucket);
     }
 
     @Test
@@ -102,8 +103,8 @@ class ChatControllerTest {
                 .name("Updated Session")
                 .userId(userId)
                 .favorite(true)
-                .createdAt(now)
-                .updatedAt(now)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         when(chatService.updateSession(sessionIdStr, request.getName(), request.getFavorite(),

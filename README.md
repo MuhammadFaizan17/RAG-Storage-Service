@@ -137,3 +137,4 @@ See `.env.example` for all required variables.
 
 ## 📞 Need Help?
 Open an issue or contact the RAG Service Team!
+

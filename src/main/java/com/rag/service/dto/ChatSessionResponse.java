@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Schema(description = "Response DTO for chat session")
@@ -25,12 +26,11 @@ public class ChatSessionResponse {
     private boolean favorite;
 
     @Schema(description = "Session creation timestamp", example = "2025-09-14T12:34:56Z")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "Session update timestamp", example = "2025-09-14T12:34:56Z")
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
     @Schema(description = "User ID", example = "123e4567-e89b-12d3-a456-426614174999")
     private UUID userId;
-    // Lombok @Data generates getters/setters
 }

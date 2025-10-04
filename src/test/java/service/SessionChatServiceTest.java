@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rag.service.dto.AddMessageRequest;
 import com.rag.service.dto.Message;
 import com.rag.service.entity.SessionChat;
+import com.rag.service.mapper.SessionChatMapper;
 import com.rag.service.repository.SessionChatRepository;
 import com.rag.service.service.SessionChatService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +35,8 @@ import static org.mockito.Mockito.when;
 class SessionChatServiceTest {
     @Mock SessionChatRepository repository;
     @Mock ObjectMapper objectMapper;
+    @Mock SessionChatMapper sessionChatMapper;
+
     @InjectMocks SessionChatService service;
 
     private String sessionId;
@@ -96,6 +100,9 @@ class SessionChatServiceTest {
     void addMessage_ShouldCreateNewSessionIfNotExists() throws Exception {
         when(repository.findBySessionId(sessionId)).thenReturn(Optional.empty());
         service.addMessage(sessionId, addMessageRequest);
+        List<Message> messages=new ArrayList<>();
+        messages.add(message);
+        when(sessionChatMapper.toSessionChat(sessionId,message.getMessageContent(),messages)).thenReturn(sessionChat);
         verify(repository).save(any(SessionChat.class));
     }
 

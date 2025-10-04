@@ -37,7 +37,7 @@ public class ChatController {
     @Operation(summary = "Create a new chat session", description = "Creates a chat session with the specified name.")
     public ResponseEntity<ChatSessionResponse> createSession(
             @Valid @RequestBody CreateSessionRequest request) {
-        return ResponseEntity.ok(chatService.createSession(request.getName(), request.getUserId(), rateLimitBucket));
+        return ResponseEntity.ok(chatService.createSession(request, rateLimitBucket));
     }
 
     @PutMapping("/sessions/{sessionId}")

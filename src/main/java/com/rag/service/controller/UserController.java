@@ -25,7 +25,7 @@ public class UserController {
     @PostMapping
     @Operation(summary = "Create a new user", description = "Creates a new user with the specified name and email")
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
-        return ResponseEntity.ok(userService.createUser(request.getName(), request.getEmail()));
+        return ResponseEntity.ok(userService.createUser(request));
     }
 
     @GetMapping("/{id}")

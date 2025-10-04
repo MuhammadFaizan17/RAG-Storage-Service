@@ -1,10 +1,12 @@
 package service;
 
 import com.rag.service.dto.ChatSessionResponse;
+import com.rag.service.dto.CreateSessionRequest;
 import com.rag.service.entity.ChatSession;
 import com.rag.service.entity.User;
 import com.rag.service.exception.NotFoundException;
 import com.rag.service.exception.RateLimitException;
+import com.rag.service.mapper.ChatSessionMapper;
 import com.rag.service.repository.ChatSessionRepository;
 import com.rag.service.repository.UserRepository;
 import com.rag.service.service.ChatService;
@@ -35,6 +37,7 @@ class ChatServiceTest {
     @Mock ChatSessionRepository sessionRepository;
     @Mock UserRepository userRepository;
     @Mock Bucket rateLimitBucket;
+    @Mock ChatSessionMapper chatSessionMapper;
     @InjectMocks ChatService chatService;
 
     private UUID userId;
@@ -57,7 +60,15 @@ class ChatServiceTest {
         when(sessionRepository.existsByNameAndUser("Session", user)).thenReturn(false);
         when(sessionRepository.save(any(ChatSession.class))).thenReturn(session);
 
-        ChatSessionResponse response = chatService.createSession("Session", userId.toString(), rateLimitBucket);
+        CreateSessionRequest request = CreateSessionRequest.builder()
+                .name("Session")
+                .userId(userId.toString())
+                .build();
+
+        when(chatSessionMapper.toEntity(request, user)).thenReturn(session);
+        when(chatSessionMapper.toChatSessionResponse(session)).thenReturn(ChatSessionResponse.builder().id(sessionId).name(session.getName()).build());
+
+        ChatSessionResponse response = chatService.createSession(request, rateLimitBucket);
         assertNotNull(response);
         assertEquals(sessionId, response.getId());
         assertEquals("Session", response.getName());
@@ -66,7 +77,11 @@ class ChatServiceTest {
     @Test
     void createSession_ShouldThrowRateLimitException() {
         when(rateLimitBucket.tryConsume(1)).thenReturn(false);
-        Executable executable = () ->  chatService.createSession("Session", userId.toString(), rateLimitBucket);
+        CreateSessionRequest request = CreateSessionRequest.builder()
+                .name("Test Session")
+                .userId(userId.toString())
+                .build();
+        Executable executable = () ->  chatService.createSession(request, rateLimitBucket);
         assertThrows(RateLimitException.class, executable);
     }
 
@@ -74,7 +89,11 @@ class ChatServiceTest {
     void createSession_ShouldThrowNotFoundException() {
         when(rateLimitBucket.tryConsume(1)).thenReturn(true);
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
-        Executable executable = () -> chatService.createSession("Session", userId.toString(), rateLimitBucket);
+        CreateSessionRequest request = CreateSessionRequest.builder()
+                .name("Test Session")
+                .userId(userId.toString())
+                .build();
+        Executable executable = () -> chatService.createSession(request, rateLimitBucket);
         assertThrows(NotFoundException.class, executable);
 
     }
@@ -84,7 +103,11 @@ class ChatServiceTest {
         when(rateLimitBucket.tryConsume(1)).thenReturn(true);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(sessionRepository.existsByNameAndUser("Session", user)).thenReturn(true);
-        Executable executable = () -> chatService.createSession("Session", userId.toString(), rateLimitBucket);
+        CreateSessionRequest request = CreateSessionRequest.builder()
+                .name("Session")
+                .userId(userId.toString())
+                .build();
+        Executable executable = () -> chatService.createSession(request, rateLimitBucket);
         assertThrows(IllegalArgumentException.class, executable);
 
     }

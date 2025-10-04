@@ -7,6 +7,7 @@ import com.rag.service.dto.AddMessageRequest;
 import com.rag.service.dto.Message;
 import com.rag.service.entity.SessionChat;
 import com.rag.service.exception.BadRequestException;
+import com.rag.service.mapper.SessionChatMapper;
 import com.rag.service.repository.SessionChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ import java.util.Optional;
 public class SessionChatService {
     private final SessionChatRepository repository;
     private final ObjectMapper objectMapper;
-
+    private final SessionChatMapper sessionChatMapper;
 
     public List<Message> getPaginatedMessages(String sessionId, int page, int size) {
         int offset = page * size;
@@ -42,23 +43,24 @@ public class SessionChatService {
     @Transactional
     public void addMessage(String sessionId, AddMessageRequest message) throws JsonProcessingException {
         Optional<SessionChat> existing = repository.findBySessionId(sessionId);
-        Message msg = Message.builder()
-                .time(LocalDateTime.now().toString())
-                .sender(message.getSender())
-                .messageContent(message.getContent())
-                .build();
-
+        Message msg = sessionChatMapper.toMessage(
+            message.getContent(),
+            message.getSender(),
+            LocalDateTime.now().toString()
+        );
 
         if (existing.isPresent()) {
             String newMessageJson = "[" + objectMapper.writeValueAsString(msg) + "]";
             repository.appendMessage(sessionId, newMessageJson);
         } else {
-            SessionChat chat = new SessionChat();
-            chat.setSessionId(sessionId);
-            chat.setContext(message.getContext());
             List<Message> conversation = new ArrayList<>();
             conversation.add(msg);
-            chat.setConversation(conversation);
+
+            SessionChat chat = sessionChatMapper.toSessionChat(
+                sessionId,
+                message.getContext(),
+                conversation
+            );
             repository.save(chat);
         }
     }
