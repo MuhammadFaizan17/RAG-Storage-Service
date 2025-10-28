@@ -3,6 +3,7 @@ package service;
 import com.rag.service.dto.UserResponse;
 import com.rag.service.entity.User;
 import com.rag.service.exception.NotFoundException;
+import com.rag.service.mapper.UserMapper;
 import com.rag.service.repository.UserRepository;
 import com.rag.service.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +25,12 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    @Mock UserRepository userRepository;
-    @InjectMocks UserService userService;
+    @Mock
+    UserRepository userRepository;
+    @InjectMocks
+    UserService userService;
+    @Mock
+    UserMapper userMapper;
 
     private UUID userId;
     private User user;
@@ -40,7 +45,14 @@ class UserServiceTest {
     void createUser_ShouldCreateUser() {
         when(userRepository.existsByEmail(user.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(user);
+        UserResponse userResponse = UserResponse.builder()
+                .name("Test User")
+                .email("faizan@test.com")
+                .id(userId)
+                .build();
+        when(userMapper.toUserResponse(user)).thenReturn(userResponse);
         UserResponse response = userService.createUser(user.getName(), user.getEmail());
+
         assertNotNull(response);
         assertEquals(userId, response.getId());
         assertEquals("Test User", response.getName());
@@ -56,6 +68,12 @@ class UserServiceTest {
     @Test
     void getUser_ShouldReturnUser() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        UserResponse userResponse = UserResponse.builder()
+                .name("Test User")
+                .email("faizan@test.com")
+                .id(userId)
+                .build();
+        when(userMapper.toUserResponse(user)).thenReturn(userResponse);
         UserResponse response = userService.getUser(userId.toString());
         assertNotNull(response);
         assertEquals(userId, response.getId());

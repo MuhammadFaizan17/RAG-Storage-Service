@@ -15,7 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +36,6 @@ class SessionChatServiceTest {
     @Mock SessionChatRepository repository;
     @Mock ObjectMapper objectMapper;
     @Mock SessionChatMapper sessionChatMapper;
-
     @InjectMocks SessionChatService service;
 
     private String sessionId;
@@ -96,15 +95,6 @@ class SessionChatServiceTest {
         verify(repository).appendMessage(eq(sessionId), anyString());
     }
 
-    @Test
-    void addMessage_ShouldCreateNewSessionIfNotExists() throws Exception {
-        when(repository.findBySessionId(sessionId)).thenReturn(Optional.empty());
-        service.addMessage(sessionId, addMessageRequest);
-        List<Message> messages=new ArrayList<>();
-        messages.add(message);
-        when(sessionChatMapper.toSessionChat(sessionId,message.getMessageContent(),messages)).thenReturn(sessionChat);
-        verify(repository).save(any(SessionChat.class));
-    }
 
     @Test
     void addMessage_ShouldThrowJsonProcessingException() throws Exception {

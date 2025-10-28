@@ -3,6 +3,7 @@ package controller;
 import com.rag.service.controller.UserController;
 import com.rag.service.dto.CreateUserRequest;
 import com.rag.service.dto.UserResponse;
+import com.rag.service.mapper.UserMapper;
 import com.rag.service.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ class UserControllerTest {
     private CreateUserRequest createUserRequest;
     private UserResponse userResponse;
     private String userId;
+    private UserMapper userMapper;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +49,7 @@ class UserControllerTest {
 
     @Test
     void createUser_ShouldReturnCreatedUser() {
-        when(userService.createUser(createUserRequest.getName(), createUserRequest.getEmail()))
+        when(userService.createUser(createUserRequest))
                 .thenReturn(userResponse);
 
         ResponseEntity<UserResponse> response = userController.createUser(createUserRequest);
@@ -55,7 +57,7 @@ class UserControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(userResponse, response.getBody());
-        verify(userService).createUser(createUserRequest.getName(), createUserRequest.getEmail());
+        verify(userService).createUser(createUserRequest);
     }
 
     @Test
